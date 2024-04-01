@@ -1,0 +1,14 @@
+package views
+
+templ Login() {
+	@MainLayout("anon-chat | login") {
+	<div class="h-screen flex flex-col items-center justify-center">
+		<form method="POST" action="/api/users/login">
+			<h1 class="text-center text-5xl">Login</h1>
+			<hr class="my-5 border-teal-300"/>
+			<input type="text" name="username" placeholder="username" autofocus class="block text-xl bg-transparent mb-5"/>
+			<input type="submit" value="Continue" class="block text-xl ml-auto"/>
+		</form>
+	</div>
+	}
+}

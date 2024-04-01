@@ -1,0 +1,35 @@
+package views
+
+templ Index() {
+	@MainLayout("anon-chat") {
+		<nav class="flex items-center justify-end">
+			<a href="/api/users/logout">Logout</a>
+		</nav>
+		<main x-data="{messages: []}">
+			<div class="flex items-center justify-center">
+				<div>
+					<input type="text" name="roomName" id="roomName" placeholder="roomName" class="block text-xl bg-transparent mb-5"/>
+					<button @click="createAndConnect(messages)" class="block text-xl m-auto">Create and Join</button>
+				</div>
+				<div>
+					<input type="text" name="roomId" id="roomId" placeholder="roomId" class="block text-xl bg-transparent mb-5"/>
+					<button @click="connect(messages)" class="block text-xl m-auto">Join</button>
+				</div>
+			</div>
+			<hr/>
+			<div x-data="{content: ''}">
+				<h2 class="text-center">Chat</h2>
+				<form>
+					<input type="text" x-model="content" placeholder="content"/>
+					<input type="submit" value="Enter" onclick="console.log('submit')"/>
+				</form>
+				<template x-for="message in messages">
+					<div>
+						<div>Username: <span x-text="message.username"></span></div>
+						<div>Content: <span x-text="message.content"></span></div>
+					</div>
+				</template>
+			</div>
+		</main>
+	}
+}

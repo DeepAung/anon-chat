@@ -1,21 +1,38 @@
 package handlers
 
 import (
-	"html/template"
+	"context"
 	"net/http"
+
+	"github.com/DeepAung/anon-chat/server/utils"
+	"github.com/DeepAung/anon-chat/server/views"
 )
 
-func PagesHandler(mux *http.ServeMux) {
-	mux.HandleFunc("GET /page", func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.ParseFiles("index.html")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+type pagesHandler struct{}
 
-		if err := tmpl.Execute(w, nil); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+func NewPagesHandler() *pagesHandler {
+	return &pagesHandler{}
+}
+
+func (h *pagesHandler) Login(w http.ResponseWriter, r *http.Request) {
+	if utils.HasCookie(r, "username") {
+		http.Redirect(w, r, "/index", http.StatusMovedPermanently)
+	}
+
+	if err := views.Login().Render(context.Background(), w); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *pagesHandler) Index(w http.ResponseWriter, r *http.Request) {
+	if !utils.HasCookie(r, "username") {
+		http.Redirect(w, r, "/login", http.StatusMovedPermanently)
+	}
+
+	err := views.Index().Render(context.Background(), w)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }

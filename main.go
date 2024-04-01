@@ -1,10 +1,6 @@
 package main
 
 import (
-	"log"
-	"net/http"
-
-	"github.com/DeepAung/anon-chat/server/handlers"
 	"github.com/DeepAung/anon-chat/server/hub"
 )
 
@@ -13,13 +9,10 @@ func main() {
 }
 
 func startServer() {
-	h := hub.NewHub()
-	go h.RunLoop()
+	hub := hub.NewHub()
 
-	mux := http.NewServeMux()
+	router := NewRouter()
 
-	handlers.WsHandler(mux, h)
-	handlers.PagesHandler(mux)
-
-	log.Fatal(http.ListenAndServe(":3000", mux))
+	server := NewServer(router, hub)
+	server.Start()
 }

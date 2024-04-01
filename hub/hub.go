@@ -1,108 +1,141 @@
 package hub
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
+	"sync"
 
 	"github.com/DeepAung/anon-chat/server/types"
+	"github.com/google/uuid"
 	"golang.org/x/net/websocket"
 )
 
-type connReq struct {
-	conn   *websocket.Conn
-	roomId string
-}
-
-type broadcastReq struct {
-	msg    types.Message
-	roomId string
-}
-
 type Hub struct {
-	rooms          map[string]map[*websocket.Conn]struct{}
-	connectChan    chan connReq
-	disconnectChan chan connReq
-	broadcastChan  chan broadcastReq
+	mu    sync.Mutex
+	rooms map[string]*types.Room
 }
 
 func NewHub() *Hub {
 	return &Hub{
-		make(map[string]map[*websocket.Conn]struct{}),
-		make(chan connReq),
-		make(chan connReq),
-		make(chan broadcastReq),
+		rooms: make(map[string]*types.Room),
 	}
 }
 
-func (h *Hub) RunLoop() {
-	for {
-		select {
-		case req := <-h.connectChan:
-			h.connect(req.conn, req.roomId)
-		case req := <-h.disconnectChan:
-			h.disconnect(req.conn, req.roomId)
-		case req := <-h.broadcastChan:
-			h.broadcast(req.msg, req.roomId)
+func (h *Hub) RoomsMarshalled() []byte {
+	tmp := make(map[string]struct {
+		Id    string       `json:"id"`
+		Name  string       `json:"name"`
+		Users []types.User `json:"users"`
+	})
+
+	for key, value := range h.rooms {
+		users := []types.User{}
+		for _, user := range value.Users {
+			users = append(users, user)
+		}
+
+		tmp[key] = struct {
+			Id    string       `json:"id"`
+			Name  string       `json:"name"`
+			Users []types.User `json:"users"`
+		}{
+			Id:    value.Id,
+			Name:  value.Name,
+			Users: users,
 		}
 	}
+
+	res, _ := json.Marshal(tmp)
+	return res
 }
 
-func (h *Hub) Connect(conn *websocket.Conn, roomId string) {
-	h.connectChan <- connReq{conn: conn, roomId: roomId}
-}
-
-func (h *Hub) Disconnect(conn *websocket.Conn, roomId string) {
-	h.disconnectChan <- connReq{conn: conn, roomId: roomId}
-}
-
-func (h *Hub) Broadcast(msg types.Message, roomId string) {
-	h.broadcastChan <- broadcastReq{msg: msg, roomId: roomId}
-}
-
-func (h *Hub) connect(conn *websocket.Conn, roomId string) {
-	if _, ok := h.rooms[roomId]; !ok {
-		h.rooms[roomId] = make(map[*websocket.Conn]struct{})
+func (h *Hub) CreateAndConnect(conn *websocket.Conn, username, roomName string) string {
+	roomId := uuid.NewString()
+	newRoom := &types.Room{
+		Id:    roomId,
+		Name:  roomName,
+		Users: make(map[*websocket.Conn]types.User),
 	}
-	h.rooms[roomId][conn] = struct{}{}
-
-	fmt.Printf("[%s|%s] connect to [%s]\n", conn.RemoteAddr().String(), conn.LocalAddr().String(), roomId)
-}
-
-func (h *Hub) disconnect(conn *websocket.Conn, roomId string) {
-	delete(h.rooms[roomId], conn)
-	if len(h.rooms[roomId]) == 0 {
-		delete(h.rooms, roomId)
+	newRoom.Users[conn] = types.User{
+		Id:       uuid.NewString(),
+		Username: username,
 	}
 
-	fmt.Printf("[%s|%s] disconnect to [%s]\n", conn.RemoteAddr().String(), conn.LocalAddr().String(), roomId)
+	h.mu.Lock()
+	h.rooms[roomId] = newRoom
+	h.mu.Unlock()
+
+	fmt.Println(username, "create and connect to ", roomName)
+	return roomId
 }
 
-func (h *Hub) broadcast(msg types.Message, roomId string) {
-	for conn := range h.rooms[roomId] {
+func (h *Hub) Connect(conn *websocket.Conn, username string, roomId string) error {
+	h.mu.Lock()
+	if room, ok := h.rooms[roomId]; ok {
+		room.Users[conn] = types.User{
+			Id:       uuid.NewString(),
+			Username: username,
+		}
+
+		h.mu.Unlock()
+		fmt.Println(username, "connect to ", roomId)
+		return nil
+	}
+
+	h.mu.Unlock()
+	fmt.Println("error: room id not found")
+	return fmt.Errorf("room id not found")
+}
+
+func (h *Hub) Disconnect(conn *websocket.Conn, roomId string) error {
+	h.mu.Lock()
+	if room, ok := h.rooms[roomId]; ok {
+		delete(room.Users, conn)
+		if len(room.Users) == 0 {
+			delete(h.rooms, roomId)
+		}
+
+		h.mu.Unlock()
+		return nil
+	}
+
+	h.mu.Unlock()
+	fmt.Println("disconnect to ", roomId)
+	return fmt.Errorf("room id not found")
+}
+
+func (h *Hub) Broadcast(msg types.Message, roomId string) error {
+	h.mu.Lock()
+	for conn := range h.rooms[roomId].Users {
 		if err := websocket.JSON.Send(conn, msg); err != nil {
-			fmt.Printf("broadcast message failed: %v\n", err)
-			return
+			h.mu.Unlock()
+			return err
 		}
 	}
 
-	fmt.Printf("[%s] is broadcasted to [%s]\n", msg, roomId)
+	h.mu.Unlock()
+	fmt.Println("in ", roomId, " |", msg, "| is broadcasted")
+	return nil
 }
 
-func (h *Hub) ConnectAndListen(ws *websocket.Conn, roomId string) {
-	h.Connect(ws, roomId)
+func (h *Hub) Listen(conn *websocket.Conn, roomId string) {
+	user := h.rooms[roomId].Users[conn]
+	var content string
 
-	var msg types.Message
+	fmt.Println("listening to ", roomId)
 	for {
-		if err := websocket.JSON.Receive(ws, &msg); err != nil {
+		if err := websocket.JSON.Receive(conn, &content); err != nil {
 			if err == io.EOF {
 				continue
 			}
 
-			h.Disconnect(ws, roomId)
+			h.Disconnect(conn, roomId)
 			fmt.Println("error: ", err)
 			continue
 		}
 
+		msg := types.NewMessage(user, content)
 		h.Broadcast(msg, roomId)
 	}
 }
