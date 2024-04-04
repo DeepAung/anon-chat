@@ -1,67 +1,63 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-    <script
-      defer
-      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
-    ></script>
 
-    <script>
-      let ws;
-      function connect(roomId, messages) {
-        messages = []
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-        ws?.close();
-        ws = new WebSocket(`ws://localhost:3000/ws/${roomId}`);
-        ws.onmessage = (event) => {
-          console.log(messages);
-          messages.push(JSON.parse(event.data))
-        };
-      }
+  <script>
+    let ws;
+    function connect(roomId, messages) {
+      messages = [];
 
-      function send(username, content) {
-        ws.send(
-          JSON.stringify({
-            username: username,
-            content: content,
-          })
-        );
-      }
-    </script>
-  </head>
-  <body x-data="{ roomId: '', username: '', content: '', messages: [] }">
-    <div>
-      <input type="text" x-model="roomId" placeholder="roomId" />
-      <button @click="connect(roomId, messages)">join or create</button>
-    </div>
+      ws?.close();
+      ws = new WebSocket(`ws://localhost:3000/ws/${roomId}`);
+      ws.onmessage = (event) => {
+        console.log(messages);
+        messages.push(JSON.parse(event.data));
+      };
+    }
 
-    <div>
-      <input type="text" x-model="username" placeholder="username" />
-      <input
-        type="text"
-        x-model="content"
-        placeholder="type something..."
-      />
-      <button @click="send(username, content)">send</button>
-    </div>
+    function send(username, content) {
+      ws.send(
+        JSON.stringify({
+          username: username,
+          content: content,
+        }),
+      );
+    }
+  </script>
+</head>
 
-    <div>RoomId: <span x-text="roomId"></span></div>
-    <div>Username: <span x-text="username"></span></div>
-    <div>Content: <span x-text="content"></span></div>
+<body x-data="{ roomId: '', username: '', content: '', messages: [] }">
+  <div>
+    <input type="text" x-model="roomId" placeholder="roomId" />
+    <button @click="connect(roomId, messages)">join or create</button>
+  </div>
 
-    <hr>
+  <div>
+    <input type="text" x-model="username" placeholder="username" />
+    <input type="text" x-model="content" placeholder="type something..." />
+    <button @click="send(username, content)">send</button>
+  </div>
 
-    <div>
-      Chat
-      <template x-for="message in messages">
-        <div>
-          <div>Username: <span x-text="message.username"></span></div>
-          <div>Content: <span x-text="message.content"></span></div>
-        </div>
-      </template>
-    </div>
-  </body>
+  <div>RoomId: <span x-text="roomId"></span></div>
+  <div>Username: <span x-text="username"></span></div>
+  <div>Content: <span x-text="content"></span></div>
+
+  <hr />
+
+  <div>
+    Chat
+    <template x-for="message in messages">
+      <div>
+        <div>Username: <span x-text="message.username"></span></div>
+        <div>Content: <span x-text="message.content"></span></div>
+      </div>
+    </template>
+  </div>
+</body>
+
 </html>

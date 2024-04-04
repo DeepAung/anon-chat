@@ -25,9 +25,10 @@ func (s *server) Start() {
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 	s.r.WsRouter(mux, s.hub)
-	s.r.UsersRouter(mux)
-	s.r.PagesRouter(mux)
+	s.r.RoomsRouter(mux, s.hub)
 	s.r.TestRouter(mux, s.hub)
+	s.r.PagesRouter(mux)
 
-	log.Fatal(http.ListenAndServe(":3000", mux))
+	// TODO: change to ":3000" in prod (I add localhost bc i don't wanna fight windows defender firewall everytime code is updated)
+	log.Fatal(http.ListenAndServe("127.0.0.1:3000", mux))
 }

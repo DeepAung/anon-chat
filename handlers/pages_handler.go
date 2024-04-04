@@ -14,24 +14,24 @@ func NewPagesHandler() *pagesHandler {
 	return &pagesHandler{}
 }
 
-func (h *pagesHandler) Login(w http.ResponseWriter, r *http.Request) {
-	if utils.HasCookie(r, "username") {
-		http.Redirect(w, r, "/index", http.StatusMovedPermanently)
+func (h *pagesHandler) Index(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
 	}
 
-	if err := views.Login().Render(context.Background(), w); err != nil {
+	if err := views.Index().Render(context.Background(), w); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
 
-func (h *pagesHandler) Index(w http.ResponseWriter, r *http.Request) {
-	if !utils.HasCookie(r, "username") {
-		http.Redirect(w, r, "/login", http.StatusMovedPermanently)
+func (h *pagesHandler) Chat(w http.ResponseWriter, r *http.Request) {
+	if !utils.HasCookie(r, "id") {
+		http.Redirect(w, r, "/index", http.StatusMovedPermanently)
 	}
 
-	err := views.Index().Render(context.Background(), w)
-	if err != nil {
+	if err := views.Chat().Render(context.Background(), w); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

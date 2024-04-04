@@ -1,0 +1,26 @@
+package views
+
+type chatType string
+
+const (
+	connect          chatType = "connect"
+	createAndConnect chatType = "createAndConnect"
+)
+
+templ Chat() {
+@MainLayout("anon-chat | chat") {
+	<div @load="onload()" x-data="{content: '', messages: []}">
+		<h2 class="text-center">Chat</h2>
+		<form>
+			<input type="text" x-model="content" placeholder="content"/>
+			<input type="submit" value="Enter" onclick="console.log('submit')"/>
+		</form>
+		<template x-for="message in messages">
+			<div>
+				<div>Username: <span x-text="message.username"></span></div>
+				<div>Content: <span x-text="message.content"></span></div>
+			</div>
+		</template>
+	</div>
+}
+}

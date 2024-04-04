@@ -2,34 +2,52 @@ package views
 
 templ Index() {
 	@MainLayout("anon-chat") {
-		<nav class="flex items-center justify-end">
-			<a href="/api/users/logout">Logout</a>
-		</nav>
-		<main x-data="{messages: []}">
+		<form
+			action="/api/rooms/create-connect"
+			method="post"
+			x-data="{username: '', roomName: '', roomId: ''}"
+			class="h-screen flex flex-col items-center justify-center"
+		>
+			<h1 class="text-center text-5xl">Login and Join</h1>
+			<hr class="my-5 border-teal-300"/>
+			<div class="flex items-center gap-5 mb-5">
+				<span>Sign youself as: </span>
+				<input
+					type="text"
+					name="username"
+					placeholder="username"
+					autofocus
+					class="text-xl bg-transparent"
+				/>
+			</div>
 			<div class="flex items-center justify-center">
 				<div>
-					<input type="text" name="roomName" id="roomName" placeholder="roomName" class="block text-xl bg-transparent mb-5"/>
-					<button @click="createAndConnect(messages)" class="block text-xl m-auto">Create and Join</button>
+					<input
+						type="text"
+						name="roomName"
+						placeholder="roomName"
+						class="block text-xl bg-transparent mb-3 text-center"
+					/>
+					<input
+						type="submit"
+						value="Create & Join"
+						class="block text-xl m-auto"
+					/>
 				</div>
 				<div>
-					<input type="text" name="roomId" id="roomId" placeholder="roomId" class="block text-xl bg-transparent mb-5"/>
-					<button @click="connect(messages)" class="block text-xl m-auto">Join</button>
+					<input
+						type="text"
+						name="roomId"
+						placeholder="roomId"
+						class="block text-xl bg-transparent mb-3 text-center"
+					/>
+					<input
+						type="submit"
+						value="Join"
+						class="block text-xl m-auto"
+					/>
 				</div>
 			</div>
-			<hr/>
-			<div x-data="{content: ''}">
-				<h2 class="text-center">Chat</h2>
-				<form>
-					<input type="text" x-model="content" placeholder="content"/>
-					<input type="submit" value="Enter" onclick="console.log('submit')"/>
-				</form>
-				<template x-for="message in messages">
-					<div>
-						<div>Username: <span x-text="message.username"></span></div>
-						<div>Content: <span x-text="message.content"></span></div>
-					</div>
-				</template>
-			</div>
-		</main>
+		</form>
 	}
 }
