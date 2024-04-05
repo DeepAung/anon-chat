@@ -23,9 +23,11 @@ func (r *router) WsRouter(mux *http.ServeMux, hub *hub.Hub) {
 
 func (r *router) RoomsRouter(mux *http.ServeMux, hub *hub.Hub) {
 	usersSvc := services.NewUsersService()
-	handler := handlers.NewRoomsHandler(hub, usersSvc)
+	roomsSvc := services.NewRoomsService()
+	handler := handlers.NewRoomsHandler(hub, usersSvc, roomsSvc)
 
-	mux.HandleFunc("POST /api/rooms/create-connect", handler.CreateConnect)
+	mux.HandleFunc("POST /api/rooms/create-and-connect", handler.CreateAndConnect)
+	mux.HandleFunc("POST /api/rooms/connect", handler.Connect)
 	mux.HandleFunc("POST /api/rooms/disconnect", handler.Disconnect)
 }
 
@@ -36,7 +38,9 @@ func (r *router) TestRouter(mux *http.ServeMux, hub *hub.Hub) {
 }
 
 func (r *router) PagesRouter(mux *http.ServeMux) {
-	handler := handlers.NewPagesHandler()
+	usersSvc := services.NewUsersService()
+	roomsSvc := services.NewRoomsService()
+	handler := handlers.NewPagesHandler(usersSvc, roomsSvc)
 
 	mux.HandleFunc("GET /chat", handler.Chat)
 	mux.HandleFunc("/", handler.Index)

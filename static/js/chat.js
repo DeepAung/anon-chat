@@ -1,16 +1,5 @@
 let ws;
 
-function onload() {
-  console.log("onload()");
-
-  const queryString = window.location.search;
-  const urlParams = new URLSearchParams(queryString);
-
-  console.log(queryString);
-  console.log(urlParams.get("roomId"));
-  console.log(urlParams.get("roomName"));
-}
-
 function send(username, content) {
   console.log("send()");
   ws.send(

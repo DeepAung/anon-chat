@@ -41,3 +41,4 @@ apikey.txt
 /public/storage
 
 node_modules/
+**/*_templ.go

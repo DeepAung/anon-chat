@@ -1,12 +1,14 @@
 package hub
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"sync"
 
 	"github.com/DeepAung/anon-chat/types"
+	"github.com/DeepAung/anon-chat/views"
 	"github.com/google/uuid"
 	"golang.org/x/net/websocket"
 )
@@ -66,6 +68,8 @@ func (h *Hub) CreateAndConnect(conn *websocket.Conn, username, roomName string) 
 	h.rooms[roomId] = newRoom
 	h.mu.Unlock()
 
+	content := username + " is joined"
+	h.Broadcast(types.NewResMessage(types.SystemType, types.SystemUser, content), roomId)
 	fmt.Println(username, "create and connect to ", roomName)
 	return roomId
 }
@@ -79,11 +83,15 @@ func (h *Hub) Connect(conn *websocket.Conn, username string, roomId string) erro
 		}
 
 		h.mu.Unlock()
+
+		content := username + " is joined"
+		h.Broadcast(types.NewResMessage(types.SystemType, types.SystemUser, content), roomId)
 		fmt.Println(username, "connect to ", roomId)
 		return nil
 	}
 
 	h.mu.Unlock()
+
 	fmt.Println("error: room id not found")
 	return fmt.Errorf("room id not found")
 }
@@ -97,21 +105,29 @@ func (h *Hub) Disconnect(conn *websocket.Conn, roomId string) error {
 		}
 
 		h.mu.Unlock()
+
+		content := room.Users[conn].Username + " is leaved"
+		h.Broadcast(types.NewResMessage(types.SystemType, types.SystemUser, content), roomId)
+		fmt.Println("disconnect to ", roomId)
 		return nil
 	}
 
 	h.mu.Unlock()
-	fmt.Println("disconnect to ", roomId)
 	return fmt.Errorf("room id not found")
 }
 
-func (h *Hub) Broadcast(msg types.Message, roomId string) error {
+func (h *Hub) Broadcast(msg types.ResMessage, roomId string) error {
 	h.mu.Lock()
 	for conn := range h.rooms[roomId].Users {
-		if err := websocket.JSON.Send(conn, msg); err != nil {
+		if err := views.Message(msg).Render(context.Background(), conn); err != nil {
 			h.mu.Unlock()
 			return err
 		}
+
+		// if err := websocket.JSON.Send(conn, msg); err != nil {
+		// 	h.mu.Unlock()
+		// 	return err
+		// }
 	}
 
 	h.mu.Unlock()
@@ -121,11 +137,11 @@ func (h *Hub) Broadcast(msg types.Message, roomId string) error {
 
 func (h *Hub) Listen(conn *websocket.Conn, roomId string) {
 	user := h.rooms[roomId].Users[conn]
-	var content string
+	reqMsg := new(types.ReqMessage)
 
 	fmt.Println("listening to ", roomId)
 	for {
-		if err := websocket.JSON.Receive(conn, &content); err != nil {
+		if err := websocket.JSON.Receive(conn, reqMsg); err != nil {
 			if err == io.EOF {
 				continue
 			}
@@ -135,7 +151,7 @@ func (h *Hub) Listen(conn *websocket.Conn, roomId string) {
 			continue
 		}
 
-		msg := types.NewMessage(user, content)
-		h.Broadcast(msg, roomId)
+		resMsg := types.NewResMessage(reqMsg.Type, user, reqMsg.Content)
+		h.Broadcast(resMsg, roomId)
 	}
 }

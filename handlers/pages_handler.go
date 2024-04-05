@@ -4,14 +4,24 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/DeepAung/anon-chat/services"
 	"github.com/DeepAung/anon-chat/utils"
 	"github.com/DeepAung/anon-chat/views"
 )
 
-type pagesHandler struct{}
+type pagesHandler struct {
+	usersSvc *services.UsersService
+	roomsSvc *services.RoomsService
+}
 
-func NewPagesHandler() *pagesHandler {
-	return &pagesHandler{}
+func NewPagesHandler(
+	usersSvc *services.UsersService,
+	roomsSvc *services.RoomsService,
+) *pagesHandler {
+	return &pagesHandler{
+		usersSvc: usersSvc,
+		roomsSvc: roomsSvc,
+	}
 }
 
 func (h *pagesHandler) Index(w http.ResponseWriter, r *http.Request) {
@@ -27,11 +37,23 @@ func (h *pagesHandler) Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *pagesHandler) Chat(w http.ResponseWriter, r *http.Request) {
-	if !utils.HasCookie(r, "id") {
-		http.Redirect(w, r, "/index", http.StatusMovedPermanently)
+	if !utils.HasCookie(r, "userId") {
+		h.usersSvc.Logout(w)
+		h.roomsSvc.DeleteCookies(w)
+		http.Redirect(w, r, "/", http.StatusMovedPermanently)
+		return
 	}
 
-	if err := views.Chat().Render(context.Background(), w); err != nil {
+	roomName := utils.GetCookieValue(r, "roomName")
+	roomId := utils.GetCookieValue(r, "roomId")
+	if roomName == "" && roomId == "" {
+		h.usersSvc.Logout(w)
+		h.roomsSvc.DeleteCookies(w)
+		http.Redirect(w, r, "/", http.StatusMovedPermanently)
+		return
+	}
+
+	if err := views.Chat(roomName, roomId).Render(context.Background(), w); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

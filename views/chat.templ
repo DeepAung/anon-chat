@@ -1,26 +1,41 @@
 package views
 
-type chatType string
+import "github.com/DeepAung/anon-chat/types"
 
-const (
-	connect          chatType = "connect"
-	createAndConnect chatType = "createAndConnect"
-)
-
-templ Chat() {
-@MainLayout("anon-chat | chat") {
-	<div @load="onload()" x-data="{content: '', messages: []}">
-		<h2 class="text-center">Chat</h2>
-		<form>
-			<input type="text" x-model="content" placeholder="content"/>
-			<input type="submit" value="Enter" onclick="console.log('submit')"/>
-		</form>
-		<template x-for="message in messages">
-			<div>
-				<div>Username: <span x-text="message.username"></span></div>
-				<div>Content: <span x-text="message.content"></span></div>
-			</div>
-		</template>
-	</div>
+func url(roomName, roomId string) string {
+	if roomName != "" {
+		return "/ws/create-and-connect/" + roomName
+	} else {
+		return "/ws/connect/" + roomId
+	}
 }
+
+templ Chat(roomName, roomId string) {
+	@MainLayout("anon-chat | chat") {
+		<nav>
+			<button hx-post="/api/rooms/disconnect">Leave</button>
+		</nav>
+		<div hx-ext="ws" ws-connect={ url(roomName, roomId) }>
+			<h2 class="text-center">Chat</h2>
+			<form id="form" ws-send>
+				<input type="hidden" name="type" value="user"/>
+				<input type="text" name="content" placeholder="content"/>
+				<input type="submit" value="Enter"/>
+			</form>
+			<div id="messages">
+				New message received here
+			</div>
+		</div>
+	}
+}
+
+templ Message(msg types.ResMessage) {
+	<div hx-swap-oob="beforeend:#messages">
+		<div>
+			<div>username: { msg.User.Username }</div>
+			<div>content: { msg.Content }</div>
+			<div>time: { msg.Time.String() }</div>
+			<hr/>
+		</div>
+	</div>
 }

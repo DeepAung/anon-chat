@@ -35,13 +35,12 @@ func (h *wsHandler) Connect(w http.ResponseWriter, r *http.Request) {
 	websocket.Handler(func(ws *websocket.Conn) {
 		err := h.hub.Connect(ws, username, roomId)
 		if err != nil {
-			wsMsg := types.WsMessage{
-				Type:    types.IsError,
+			data, _ := json.Marshal(types.ReqMessage{
+				Type:    types.ErrorType,
 				Content: err.Error(),
-			}
-			res, _ := json.Marshal(&wsMsg)
+			})
 
-			ws.Write(res)
+			ws.Write(data)
 			ws.Close()
 			return
 		}
@@ -51,8 +50,10 @@ func (h *wsHandler) Connect(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *wsHandler) CreateAndConnect(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("=============sadfds=af=dsa====")
 	username := utils.GetCookieValue(r, "username")
 	if username == "" {
+		fmt.Println("=============cookie not found====")
 		http.Error(w, "cookie not found", http.StatusBadRequest)
 		return
 	}
