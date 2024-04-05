@@ -1,4 +1,4 @@
-module github.com/DeepAung/anon-chat/server
+module github.com/DeepAung/anon-chat
 
 go 1.22.1
 

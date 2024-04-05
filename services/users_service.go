@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/DeepAung/anon-chat/server/utils"
+	"github.com/DeepAung/anon-chat/utils"
 	"github.com/google/uuid"
 )
 

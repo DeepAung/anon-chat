@@ -3,9 +3,9 @@ package main
 import (
 	"net/http"
 
-	"github.com/DeepAung/anon-chat/server/handlers"
-	"github.com/DeepAung/anon-chat/server/hub"
-	"github.com/DeepAung/anon-chat/server/services"
+	"github.com/DeepAung/anon-chat/handlers"
+	"github.com/DeepAung/anon-chat/hub"
+	"github.com/DeepAung/anon-chat/services"
 )
 
 type router struct{}

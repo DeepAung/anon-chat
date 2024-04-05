@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/DeepAung/anon-chat/server/hub"
-	"github.com/DeepAung/anon-chat/server/types"
-	"github.com/DeepAung/anon-chat/server/utils"
+	"github.com/DeepAung/anon-chat/hub"
+	"github.com/DeepAung/anon-chat/types"
+	"github.com/DeepAung/anon-chat/utils"
 	"golang.org/x/net/websocket"
 )
 

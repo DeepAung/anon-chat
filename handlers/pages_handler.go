@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/DeepAung/anon-chat/server/utils"
-	"github.com/DeepAung/anon-chat/server/views"
+	"github.com/DeepAung/anon-chat/utils"
+	"github.com/DeepAung/anon-chat/views"
 )
 
 type pagesHandler struct{}

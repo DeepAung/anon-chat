@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/DeepAung/anon-chat/server/hub"
-	"github.com/DeepAung/anon-chat/server/services"
+	"github.com/DeepAung/anon-chat/hub"
+	"github.com/DeepAung/anon-chat/services"
 )
 
 type roomsHandler struct {

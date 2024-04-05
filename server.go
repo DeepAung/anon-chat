@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/DeepAung/anon-chat/server/hub"
+	"github.com/DeepAung/anon-chat/hub"
 )
 
 type server struct {

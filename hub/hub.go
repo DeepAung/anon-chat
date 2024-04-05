@@ -6,7 +6,7 @@ import (
 	"io"
 	"sync"
 
-	"github.com/DeepAung/anon-chat/server/types"
+	"github.com/DeepAung/anon-chat/types"
 	"github.com/google/uuid"
 	"golang.org/x/net/websocket"
 )

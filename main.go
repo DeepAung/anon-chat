@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/DeepAung/anon-chat/server/hub"
+	"github.com/DeepAung/anon-chat/hub"
 )
 
 func main() {
