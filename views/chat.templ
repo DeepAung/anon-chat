@@ -2,20 +2,12 @@ package views
 
 import "github.com/DeepAung/anon-chat/types"
 
-func url(roomName, roomId string) string {
-	if roomName != "" {
-		return "/ws/create-and-connect/" + roomName
-	} else {
-		return "/ws/connect/" + roomId
-	}
-}
-
-templ Chat(roomName, roomId string) {
+templ Chat(connectUrl string) {
 	@MainLayout("anon-chat | chat") {
 		<nav>
 			<button hx-post="/api/rooms/disconnect">Leave</button>
 		</nav>
-		<div hx-ext="ws" ws-connect={ url(roomName, roomId) }>
+		<div hx-ext="ws" ws-connect={ connectUrl }>
 			<h2 class="text-center">Chat</h2>
 			<form id="form" ws-send>
 				<input type="hidden" name="type" value="user"/>
@@ -36,6 +28,15 @@ templ Message(msg types.ResMessage) {
 			<div>content: { msg.Content }</div>
 			<div>time: { msg.Time.String() }</div>
 			<hr/>
+		</div>
+	</div>
+}
+
+templ ErrorMessage(errMsg string) {
+	<div hx-swap-oob="innerHTML:body">
+		<div>
+			<span>Error: { errMsg }</span>
+			<a href="/">Return</a>
 		</div>
 	</div>
 }

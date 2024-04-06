@@ -1,13 +1,11 @@
 package handlers
 
 import (
-	"encoding/json"
-	"fmt"
+	"context"
 	"net/http"
 
 	"github.com/DeepAung/anon-chat/hub"
-	"github.com/DeepAung/anon-chat/types"
-	"github.com/DeepAung/anon-chat/utils"
+	"github.com/DeepAung/anon-chat/views"
 	"golang.org/x/net/websocket"
 )
 
@@ -22,48 +20,21 @@ func NewWsHandler(hub *hub.Hub) *wsHandler {
 }
 
 func (h *wsHandler) Connect(w http.ResponseWriter, r *http.Request) {
-	username := utils.GetCookieValue(r, "username")
+	query := r.URL.Query()
+	roomId := query.Get("roomId")
+	username := query.Get("username")
 	if username == "" {
-		http.Error(w, "cookie not found", http.StatusBadRequest)
-		return
+		username = "Anonymous User"
 	}
-
-	roomId := r.PathValue("roomId")
-
-	fmt.Println("user: ", username, " | roomId: ", roomId)
 
 	websocket.Handler(func(ws *websocket.Conn) {
 		err := h.hub.Connect(ws, username, roomId)
 		if err != nil {
-			data, _ := json.Marshal(types.ReqMessage{
-				Type:    types.ErrorType,
-				Content: err.Error(),
-			})
-
-			ws.Write(data)
+			_ = views.ErrorMessage(err.Error()).Render(context.Background(), ws)
 			ws.Close()
 			return
 		}
 
-		h.hub.Listen(ws, roomId)
-	}).ServeHTTP(w, r)
-}
-
-func (h *wsHandler) CreateAndConnect(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("=============sadfds=af=dsa====")
-	username := utils.GetCookieValue(r, "username")
-	if username == "" {
-		fmt.Println("=============cookie not found====")
-		http.Error(w, "cookie not found", http.StatusBadRequest)
-		return
-	}
-
-	roomName := r.PathValue("roomName")
-
-	fmt.Println("username: ", username, " | roomName: ", roomName)
-
-	websocket.Handler(func(ws *websocket.Conn) {
-		roomId := h.hub.CreateAndConnect(ws, username, roomName)
 		h.hub.Listen(ws, roomId)
 	}).ServeHTTP(w, r)
 }

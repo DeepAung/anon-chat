@@ -4,24 +4,16 @@ import (
 	"net/http"
 
 	"github.com/DeepAung/anon-chat/hub"
-	"github.com/DeepAung/anon-chat/services"
+	"github.com/DeepAung/anon-chat/utils"
 )
 
 type roomsHandler struct {
-	hub      *hub.Hub
-	usersSvc *services.UsersService
-	roomsSvc *services.RoomsService
+	hub *hub.Hub
 }
 
-func NewRoomsHandler(
-	hub *hub.Hub,
-	usersSvc *services.UsersService,
-	roomsSvc *services.RoomsService,
-) *roomsHandler {
+func NewRoomsHandler(hub *hub.Hub) *roomsHandler {
 	return &roomsHandler{
-		hub:      hub,
-		usersSvc: usersSvc,
-		roomsSvc: roomsSvc,
+		hub: hub,
 	}
 }
 
@@ -37,10 +29,16 @@ func (h *roomsHandler) CreateAndConnect(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	h.usersSvc.Login(w, username)
-	h.roomsSvc.SetRoomName(w, roomName)
+	roomId := h.hub.Create(roomName)
+	url, err := utils.SetQueries("/chat", map[string]string{
+		"username": username,
+		"roomId":   roomId,
+	})
+	if err != nil {
+		http.Error(w, "gen url error: "+err.Error(), http.StatusInternalServerError)
+	}
 
-	w.Header().Add("HX-Redirect", "/chat")
+	w.Header().Add("HX-Redirect", url)
 }
 
 func (h *roomsHandler) Connect(w http.ResponseWriter, r *http.Request) {
@@ -55,15 +53,17 @@ func (h *roomsHandler) Connect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.usersSvc.Login(w, username)
-	h.roomsSvc.SetRoomId(w, roomId)
+	url, err := utils.SetQueries("/chat", map[string]string{
+		"username": username,
+		"roomId":   roomId,
+	})
+	if err != nil {
+		http.Error(w, "gen url error: "+err.Error(), http.StatusInternalServerError)
+	}
 
-	w.Header().Add("HX-Redirect", "/chat")
+	w.Header().Add("HX-Redirect", url)
 }
 
 func (h *roomsHandler) Disconnect(w http.ResponseWriter, r *http.Request) {
-	h.usersSvc.Logout(w)
-	h.roomsSvc.DeleteCookies(w)
-
 	w.Header().Add("HX-Redirect", "/")
 }
