@@ -6,22 +6,21 @@ templ Chat(connectUrl string) {
 	@MainLayout("anon-chat | chat") {
 		<script src="./static/js/chat.js"></script>
 		<div hx-ext="ws" ws-connect={ connectUrl }>
-			<nav>
-				<form id="disconnect-form" ws-send>
+			@Navbar() {
+				<form id="disconnect-form" ws-send class="font-semibold hover:text-primary">
 					<input type="hidden" name="type" value="disconnect"/>
 					<input type="submit" value="Disconnect" class="cursor-pointer"/>
 				</form>
-			</nav>
-			<main>
-				<h2 class="text-center">Chat</h2>
-				<form ws-send>
+			}
+
+			<main class="h-[90vh] flex flex-col">
+				<h2 class="text-center flex-initial">Chat</h2>
+				<div id="messages" class="flex-auto flex-col-reverse overflow-y-scroll overflow-x-hidden"></div>
+				<form ws-send class="flex-initial">
 					<input type="hidden" name="type" value="user"/>
 					<input type="text" name="content" placeholder="content"/>
 					<input type="submit" value="Enter"/>
 				</form>
-				<div id="messages">
-					New message received here
-				</div>
 			</main>
 		</div>
 	}

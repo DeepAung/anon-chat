@@ -1,51 +1,54 @@
 package views
 
-				//<form action="/api/rooms/create-and-connect" method="post">
+//<form action="/api/rooms/create-and-connect" method="post">
 templ Index() {
 	@MainLayout("anon-chat") {
-		<div x-data="{username: ''}" class="h-screen flex flex-col items-center justify-center">
-			<h1 class="text-center text-5xl">Login and Join</h1>
-			<hr class="my-5 border-teal-300"/>
-			<div class="flex items-center gap-5 mb-5">
-				<span>Sign youself as: </span>
-				<input
-					type="text"
-					x-model="username"
-					placeholder="username"
-					autofocus
-					class="text-xl bg-transparent"
-				/>
-			</div>
-			<div class="flex items-center justify-center">
-				<form hx-post="/api/rooms/create-and-connect">
-					<input type="hidden" name="username" x-model="username"/>
+		@Navbar()
+		<main class="h-[90vh] flex justify-center items-center">
+			<div x-data="{username: ''}" class="flex flex-col sm:flex-row items-center justify-center gap-28">
+				<form hx-post="/api/rooms/create-and-connect" class="flex flex-col gap-3 p-5 border-2 border-primary rounded">
+					<h1 class="text-center text-3xl text-primary mb-3">Create Room</h1>
+					<input
+						type="text"
+						name="username"
+						x-model="username"
+						placeholder="username"
+						class="block text-xl bg-transparent text-center"
+					/>
 					<input
 						type="text"
 						name="roomName"
-						placeholder="roomName"
-						class="block text-xl bg-transparent mb-3 text-center"
+						placeholder="room name"
+						class="block text-xl bg-transparent text-center"
 					/>
 					<input
 						type="submit"
 						value="Create & Join"
-						class="block text-xl m-auto"
+						class="block text-xl m-auto hover:text-primary focus:text-primary"
 					/>
 				</form>
-				<form hx-post="/api/rooms/connect">
-					<input type="hidden" name="username" x-model="username"/>
+				<form hx-post="/api/rooms/connect" class="flex flex-col gap-3 p-5 border-2 border-primary rounded">
+					<h1 class="text-center text-3xl text-primary mb-3">Connect Room</h1>
 					<input
 						type="text"
-						name="roomId"
+						name="username"
+						x-model="username"
+						placeholder="username"
+						class="block text-xl bg-transparent text-center"
+					/>
+					<input
+						type="text"
+						name="room id"
 						placeholder="roomId"
-						class="block text-xl bg-transparent mb-3 text-center"
+						class="block text-xl bg-transparent text-center"
 					/>
 					<input
 						type="submit"
 						value="Join"
-						class="block text-xl m-auto"
+						class="block text-xl m-auto hover:text-primary focus:text-primary"
 					/>
 				</form>
 			</div>
-		</div>
+		</main>
 	}
 }
