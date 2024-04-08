@@ -15,7 +15,7 @@ import (
 
 type Hub struct {
 	mu    sync.Mutex
-	rooms map[string]*types.Room
+	rooms map[string]*types.Room // TODO: should it be map[string]types.Room instead???
 }
 
 func NewHub() *Hub {
@@ -92,6 +92,8 @@ func (h *Hub) Connect(conn *websocket.Conn, username string, roomId string) erro
 func (h *Hub) Disconnect(conn *websocket.Conn, roomId string) error {
 	h.mu.Lock()
 	if room, ok := h.rooms[roomId]; ok {
+		username := room.Users[conn].Username
+
 		delete(room.Users, conn)
 		if len(room.Users) == 0 {
 			delete(h.rooms, roomId)
@@ -99,7 +101,7 @@ func (h *Hub) Disconnect(conn *websocket.Conn, roomId string) error {
 
 		h.mu.Unlock()
 
-		content := room.Users[conn].Username + " is leaved"
+		content := username + " is leaved"
 		h.Broadcast(types.NewResMessage(types.SystemType, types.SystemUser, content), roomId)
 		// fmt.Println("disconnect to ", roomId)
 		return nil
@@ -125,18 +127,23 @@ func (h *Hub) Broadcast(msg types.ResMessage, roomId string) error {
 
 func (h *Hub) Listen(conn *websocket.Conn, roomId string) {
 	user := h.rooms[roomId].Users[conn]
-	reqMsg := new(types.ReqMessage)
+	var reqMsg types.ReqMessage
 
 	// fmt.Println("listening to ", roomId)
 	for {
-		if err := websocket.JSON.Receive(conn, reqMsg); err != nil {
+		if err := websocket.JSON.Receive(conn, &reqMsg); err != nil {
 			if err == io.EOF {
 				continue
 			}
 
 			h.Disconnect(conn, roomId)
-			// fmt.Println("error: ", err)
-			continue
+			fmt.Println("disconnect bz error: ", err)
+			return
+		}
+
+		if reqMsg.Type == types.DisconnectType {
+			h.Disconnect(conn, roomId)
+			return
 		}
 
 		resMsg := types.NewResMessage(reqMsg.Type, user, reqMsg.Content)

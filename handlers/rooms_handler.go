@@ -63,7 +63,3 @@ func (h *roomsHandler) Connect(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("HX-Redirect", url)
 }
-
-func (h *roomsHandler) Disconnect(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("HX-Redirect", "/")
-}

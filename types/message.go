@@ -14,9 +14,9 @@ type ReqMessage struct {
 type MessageType string
 
 const (
-	UserType   MessageType = "user"
-	ErrorType  MessageType = "error"
-	SystemType MessageType = "system"
+	UserType       MessageType = "user"
+	SystemType     MessageType = "system"
+	DisconnectType MessageType = "disconnect"
 )
 
 type ResMessage struct {

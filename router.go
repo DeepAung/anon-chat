@@ -24,7 +24,6 @@ func (r *router) RoomsRouter(mux *http.ServeMux, hub *hub.Hub) {
 
 	mux.HandleFunc("POST /api/rooms/create-and-connect", handler.CreateAndConnect)
 	mux.HandleFunc("POST /api/rooms/connect", handler.Connect)
-	mux.HandleFunc("POST /api/rooms/disconnect", handler.Disconnect)
 }
 
 func (r *router) TestRouter(mux *http.ServeMux, hub *hub.Hub) {

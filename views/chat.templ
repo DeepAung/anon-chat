@@ -4,19 +4,25 @@ import "github.com/DeepAung/anon-chat/types"
 
 templ Chat(connectUrl string) {
 	@MainLayout("anon-chat | chat") {
-		<nav>
-			<button hx-post="/api/rooms/disconnect">Leave</button>
-		</nav>
+		<script src="./static/js/chat.js"></script>
 		<div hx-ext="ws" ws-connect={ connectUrl }>
-			<h2 class="text-center">Chat</h2>
-			<form id="form" ws-send>
-				<input type="hidden" name="type" value="user"/>
-				<input type="text" name="content" placeholder="content"/>
-				<input type="submit" value="Enter"/>
-			</form>
-			<div id="messages">
-				New message received here
-			</div>
+			<nav>
+				<form id="disconnect-form" ws-send>
+					<input type="hidden" name="type" value="disconnect"/>
+					<input type="submit" value="Disconnect" class="cursor-pointer"/>
+				</form>
+			</nav>
+			<main>
+				<h2 class="text-center">Chat</h2>
+				<form ws-send>
+					<input type="hidden" name="type" value="user"/>
+					<input type="text" name="content" placeholder="content"/>
+					<input type="submit" value="Enter"/>
+				</form>
+				<div id="messages">
+					New message received here
+				</div>
+			</main>
 		</div>
 	}
 }
