@@ -1,11 +1,9 @@
 package handlers
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/DeepAung/anon-chat/hub"
-	"github.com/DeepAung/anon-chat/views"
 	"golang.org/x/net/websocket"
 )
 
@@ -28,14 +26,6 @@ func (h *wsHandler) Connect(w http.ResponseWriter, r *http.Request) {
 	}
 
 	websocket.Handler(func(ws *websocket.Conn) {
-		err := h.hub.Connect(ws, username, roomId)
-		defer ws.Close()
-
-		if err != nil {
-			_ = views.ErrorMessage(err.Error()).Render(context.Background(), ws)
-			return
-		}
-
-		h.hub.Listen(ws, roomId)
+		h.hub.ConnectAndListen(ws, username, roomId)
 	}).ServeHTTP(w, r)
 }

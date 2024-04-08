@@ -7,11 +7,7 @@ type User struct {
 	Username string `json:"username"`
 }
 
-func NewUser(username string) User {
-	return User{
-		Id:       uuid.NewString(),
-		Username: username,
-	}
+var SystemUser = User{
+	Id:       uuid.NewString(),
+	Username: "system",
 }
-
-var SystemUser = NewUser("system")

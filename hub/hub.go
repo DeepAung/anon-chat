@@ -3,6 +3,7 @@ package hub
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"sync"
@@ -13,9 +14,11 @@ import (
 	"golang.org/x/net/websocket"
 )
 
+var RoomIdNotFoundErr error = errors.New("room id not found")
+
 type Hub struct {
 	mu    sync.Mutex
-	rooms map[string]*types.Room // TODO: should it be map[string]types.Room instead???
+	rooms map[string]*types.Room
 }
 
 func NewHub() *Hub {
@@ -69,46 +72,36 @@ func (h *Hub) Create(roomName string) string {
 
 func (h *Hub) Connect(conn *websocket.Conn, username string, roomId string) error {
 	h.mu.Lock()
-	if room, ok := h.rooms[roomId]; ok {
-		room.Users[conn] = types.User{
-			Id:       uuid.NewString(),
-			Username: username,
-		}
-
+	room, ok := h.rooms[roomId]
+	if !ok {
 		h.mu.Unlock()
+		return RoomIdNotFoundErr
+	}
 
-		content := username + " is joined"
-		h.Broadcast(types.NewResMessage(types.SystemType, types.SystemUser, content), roomId)
-		// fmt.Println(username, "connect to ", roomId)
-		return nil
+	room.Users[conn] = types.User{
+		Id:       uuid.NewString(),
+		Username: username,
 	}
 
 	h.mu.Unlock()
-
-	// fmt.Println("error: room id not found")
-	return fmt.Errorf("room id not found")
+	return nil
 }
 
 func (h *Hub) Disconnect(conn *websocket.Conn, roomId string) error {
 	h.mu.Lock()
-	if room, ok := h.rooms[roomId]; ok {
-		username := room.Users[conn].Username
-
-		delete(room.Users, conn)
-		if len(room.Users) == 0 {
-			delete(h.rooms, roomId)
-		}
-
+	room, ok := h.rooms[roomId]
+	if !ok {
 		h.mu.Unlock()
+		return RoomIdNotFoundErr
+	}
 
-		content := username + " is leaved"
-		h.Broadcast(types.NewResMessage(types.SystemType, types.SystemUser, content), roomId)
-		// fmt.Println("disconnect to ", roomId)
-		return nil
+	delete(room.Users, conn)
+	if len(room.Users) == 0 {
+		delete(h.rooms, roomId)
 	}
 
 	h.mu.Unlock()
-	return fmt.Errorf("room id not found")
+	return nil
 }
 
 func (h *Hub) Broadcast(msg types.ResMessage, roomId string) error {
@@ -121,27 +114,44 @@ func (h *Hub) Broadcast(msg types.ResMessage, roomId string) error {
 	}
 
 	h.mu.Unlock()
-	// fmt.Println("roomId: ", roomId, " | msg: ", msg, "| is broadcasted")
 	return nil
 }
 
-func (h *Hub) Listen(conn *websocket.Conn, roomId string) {
+func (h *Hub) ConnectAndListen(conn *websocket.Conn, username, roomId string) {
+	defer conn.Close()
+
+	if err := h.Connect(conn, username, roomId); err != nil {
+		views.ErrorMessage(err.Error()).Render(context.Background(), conn)
+		return
+	}
+
+	resMsg := types.NewSystemMessage(username + " is joined")
+	h.Broadcast(resMsg, roomId)
+
+	h.mu.Lock()
 	user := h.rooms[roomId].Users[conn]
+	h.mu.Unlock()
 	var reqMsg types.ReqMessage
 
-	// fmt.Println("listening to ", roomId)
 	for {
 		if err := websocket.JSON.Receive(conn, &reqMsg); err != nil {
 			if err == io.EOF {
 				continue
 			}
 
-			h.Disconnect(conn, roomId)
 			fmt.Println("disconnect bz error: ", err)
+
+			views.ErrorMessage(err.Error()).Render(context.Background(), conn)
+
+			resMsg := types.NewSystemMessage(username + " is leaved")
+			h.Broadcast(resMsg, roomId)
+			h.Disconnect(conn, roomId)
 			return
 		}
 
 		if reqMsg.Type == types.DisconnectType {
+			resMsg := types.NewSystemMessage(username + " is leaved")
+			h.Broadcast(resMsg, roomId)
 			h.Disconnect(conn, roomId)
 			return
 		}

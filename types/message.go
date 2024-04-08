@@ -36,3 +36,13 @@ func NewResMessage(msgType MessageType, user User, content string) ResMessage {
 		Time:    time.Now(),
 	}
 }
+
+func NewSystemMessage(content string) ResMessage {
+	return ResMessage{
+		Id:      uuid.NewString(),
+		Type:    SystemType,
+		User:    SystemUser,
+		Content: content,
+		Time:    time.Now(),
+	}
+}
