@@ -74,8 +74,17 @@ func (h *Hub) Connect(conn *websocket.Conn, username string, roomId string) erro
 	h.mu.Lock()
 	room, ok := h.rooms[roomId]
 	if !ok {
-		h.mu.Unlock()
-		return RoomIdNotFoundErr
+		// IN PROD
+		// h.mu.Unlock()
+		// return RoomIdNotFoundErr
+
+		// FOR DEV
+		h.rooms[roomId] = &types.Room{
+			Id:    roomId,
+			Name:  "Anonymous Room",
+			Users: make(map[*websocket.Conn]types.User),
+		}
+		room = h.rooms[roomId]
 	}
 
 	room.Users[conn] = types.User{

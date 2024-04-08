@@ -6,7 +6,10 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: "rgb(94, 234, 212)",
+        primary: {
+          DEFAULT: "rgb(94, 234, 212)",
+          dark: "rgb(20, 184, 166)",
+        },
       },
     },
     fontFamily: {
