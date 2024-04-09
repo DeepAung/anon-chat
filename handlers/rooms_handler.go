@@ -5,6 +5,7 @@ import (
 
 	"github.com/DeepAung/anon-chat/hub"
 	"github.com/DeepAung/anon-chat/utils"
+	"github.com/DeepAung/anon-chat/views"
 )
 
 type roomsHandler struct {
@@ -22,20 +23,21 @@ func (h *roomsHandler) CreateAndConnect(w http.ResponseWriter, r *http.Request) 
 	roomName := r.FormValue("roomName")
 
 	if username == "" {
-		http.Error(w, "no username", http.StatusBadRequest)
+		utils.Render(views.ErrorMsg("no username"), w)
 		return
 	} else if roomName == "" {
-		http.Error(w, "no room name", http.StatusBadRequest)
+		utils.Render(views.ErrorMsg("no room name"), w)
 		return
 	}
 
-	roomId := h.hub.Create(roomName)
+	roomId := h.hub.CreateRoom(roomName)
 	url, err := utils.SetQueries("/chat", map[string]string{
 		"username": username,
 		"roomId":   roomId,
 	})
 	if err != nil {
-		http.Error(w, "gen url error: "+err.Error(), http.StatusInternalServerError)
+		utils.Render(views.ErrorBody("gen url error: "+err.Error()), w)
+		return
 	}
 
 	w.Header().Add("HX-Redirect", url)
@@ -46,10 +48,10 @@ func (h *roomsHandler) Connect(w http.ResponseWriter, r *http.Request) {
 	roomId := r.FormValue("roomId")
 
 	if username == "" {
-		http.Error(w, "no username", http.StatusBadRequest)
+		utils.Render(views.ErrorMsg("no username"), w)
 		return
 	} else if roomId == "" {
-		http.Error(w, "no room id", http.StatusBadRequest)
+		utils.Render(views.ErrorMsg("no room id"), w)
 		return
 	}
 
@@ -58,7 +60,8 @@ func (h *roomsHandler) Connect(w http.ResponseWriter, r *http.Request) {
 		"roomId":   roomId,
 	})
 	if err != nil {
-		http.Error(w, "gen url error: "+err.Error(), http.StatusInternalServerError)
+		utils.Render(views.ErrorBody("gen url error: "+err.Error()), w)
+		return
 	}
 
 	w.Header().Add("HX-Redirect", url)

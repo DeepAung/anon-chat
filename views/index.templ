@@ -4,49 +4,52 @@ package views
 templ Index() {
 	@MainLayout("anon-chat") {
 		@Navbar()
-		<main x-data="{username: ''}" class="h-[90vh] flex flex-col md:flex-row items-center justify-around">
-			<form hx-post="/api/rooms/create-and-connect" class="flex flex-col gap-3 p-5 border-2 border-primary rounded">
-				<h1 class="text-center text-3xl text-primary mb-3">Create Room</h1>
-				<input
-					type="text"
-					name="username"
-					x-model="username"
-					placeholder="username"
-					class="block text-xl bg-transparent text-center"
-				/>
-				<input
-					type="text"
-					name="roomName"
-					placeholder="room name"
-					class="block text-xl bg-transparent text-center"
-				/>
-				<input
-					type="submit"
-					value="Create & Join"
-					class="block text-xl m-auto hover:text-primary focus:text-primary"
-				/>
-			</form>
-			<form hx-post="/api/rooms/connect" class="flex flex-col gap-3 p-5 border-2 border-primary rounded">
-				<h1 class="text-center text-3xl text-primary mb-3">Connect Room</h1>
-				<input
-					type="text"
-					name="username"
-					x-model="username"
-					placeholder="username"
-					class="block text-xl bg-transparent text-center"
-				/>
-				<input
-					type="text"
-					name="room id"
-					placeholder="roomId"
-					class="block text-xl bg-transparent text-center"
-				/>
-				<input
-					type="submit"
-					value="Join"
-					class="block text-xl m-auto hover:text-primary focus:text-primary"
-				/>
-			</form>
+		<main class="h-[90vh] flex flex-col justify-center items-center">
+			<div x-data="{username: ''}" class="flex flex-col md:flex-row items-center justify-center gap-14">
+				<form hx-post="/api/rooms/create-and-connect" hx-swap="none" class="max-w-[80vw] flex flex-col gap-3 p-5 border-2 border-primary rounded">
+					<h1 class="text-center text-3xl text-primary mb-3">Create Room</h1>
+					<input
+						type="text"
+						name="username"
+						x-model="username"
+						placeholder="username"
+						class="block text-xl bg-transparent text-center"
+					/>
+					<input
+						type="text"
+						name="roomName"
+						placeholder="room name"
+						class="block text-xl bg-transparent text-center"
+					/>
+					<input
+						type="submit"
+						value="Create & Join"
+						class="block text-xl m-auto hover:text-primary focus:text-primary"
+					/>
+				</form>
+				<form hx-post="/api/rooms/connect" hx-swap="none" class="max-w-[80vw] flex flex-col gap-3 p-5 border-2 border-primary rounded">
+					<h1 class="text-center text-3xl text-primary mb-3">Connect Room</h1>
+					<input
+						type="text"
+						name="username"
+						x-model="username"
+						placeholder="username"
+						class="block text-xl bg-transparent text-center"
+					/>
+					<input
+						type="text"
+						name="roomId"
+						placeholder="roomId"
+						class="block text-xl bg-transparent text-center"
+					/>
+					<input
+						type="submit"
+						value="Join"
+						class="block text-xl m-auto hover:text-primary focus:text-primary"
+					/>
+				</form>
+			</div>
+			<div id="error-msg" hx-swap-oob="true" class="mt-5"></div>
 		</main>
 	}
 }

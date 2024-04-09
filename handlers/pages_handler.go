@@ -4,18 +4,24 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/DeepAung/anon-chat/hub"
+	"github.com/DeepAung/anon-chat/utils"
 	"github.com/DeepAung/anon-chat/views"
 )
 
-type pagesHandler struct{}
+type pagesHandler struct {
+	hub *hub.Hub
+}
 
-func NewPagesHandler() *pagesHandler {
-	return &pagesHandler{}
+func NewPagesHandler(hub *hub.Hub) *pagesHandler {
+	return &pagesHandler{
+		hub: hub,
+	}
 }
 
 func (h *pagesHandler) Index(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
-		http.NotFound(w, r)
+		utils.Render(views.ErrorPage("path not found"), w)
 		return
 	}
 
@@ -28,7 +34,14 @@ func (h *pagesHandler) Index(w http.ResponseWriter, r *http.Request) {
 func (h *pagesHandler) Chat(w http.ResponseWriter, r *http.Request) {
 	connectUrl := "/ws/connect?" + r.URL.RawQuery
 
-	if err := views.Chat(connectUrl).Render(context.Background(), w); err != nil {
+	roomId := r.URL.Query().Get("roomId")
+	room, ok := h.hub.GetRoom(roomId)
+	if !ok {
+		utils.Render(views.ErrorPage("room id not found"), w)
+		return
+	}
+
+	if err := views.Chat(room.Name, room.Id, connectUrl).Render(context.Background(), w); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

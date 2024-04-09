@@ -3,7 +3,7 @@ package views
 import "github.com/DeepAung/anon-chat/types"
 import "github.com/xeonx/timeago"
 
-templ Chat(connectUrl string) {
+templ Chat(roomName, roomId, connectUrl string) {
 	@MainLayout("anon-chat | chat") {
 		<script src="./static/js/chat.js"></script>
 		<div hx-ext="ws" ws-connect={ connectUrl }>
@@ -13,13 +13,43 @@ templ Chat(connectUrl string) {
 					<input type="submit" value="Disconnect" class="cursor-pointer"/>
 				</form>
 			}
-			<main class="h-[90vh] flex flex-col">
-				<div id="messages" class="flex-auto flex-col-reverse overflow-y-scroll overflow-x-hidden"></div>
-				<form ws-send class="flex-initial">
-					<input type="hidden" name="type" value="user"/>
-					<input type="text" name="content" placeholder="Send some message..." class="bg-slate-600 border border-slate-300 text-slate-300 text-sm rounded-lg block w-[calc(100vw-30px)] p-2.5 my-[15px] mx-auto"/>
-				</form>
+
+			<main x-data="{ show: false }" class="h-[90vh] flex flex-col">
+					<div class="p-3 flex items-center">
+						<div class="flex-auto">
+							<h1 class="text-primary text-3xl font-semibold text-center">{ roomName }</h1>
+							<p class="text-gray-600 text-center">({ roomId })</p>
+						</div>
+						<button type="button" @click="show = true" class="flex-initial h-min p-2 rounded bg-primary-dark">
+							<i class="fa-solid fa-users"></i>
+						</button>
+					</div>
+
+					<div id="messages" class="flex-auto flex-col-reverse overflow-y-scroll overflow-x-hidden"></div>
+
+					<form x-data ws-send class="flex-initial">
+						<input type="hidden" name="type" value="user"/>
+						<textarea
+							rows="5"
+							name="content"
+							placeholder="Send some message... (Ctrl + Enter to send)"
+							@keydown.ctrl.enter.prevent="$el.form.requestSubmit( $refs.submitButton ); $el.value = ''"
+							class="bg-slate-800 text-slate-300 text-sm rounded-lg block w-[calc(100vw-30px)] p-2.5 my-[15px] mx-auto"
+						></textarea>
+						<input x-ref="submitButton" type="submit" class="hidden"/>
+					</form>
+
+					<section 
+					:class="show ? '' : 'hidden'"
+					class="h-[100vh] bg-slate-800 fixed z-10 top-0 right-0 p-3 overflow-x-hidden transition" 
+					>
+						<button type="button" @click="show = false" class="h-min p-2 rounded bg-primary-dark">
+							<i class="fa-solid fa-users"></i>
+						</button>
+						User here bro
+					</section>
 			</main>
+
 		</div>
 	}
 }
@@ -32,17 +62,7 @@ templ Message(msg types.ResMessage) {
 				<span class="text-gray-600 text-sm">({ msg.User.Id })</span>
 				<span class="text-gray-400 text-sm">{ timeago.English.Format(msg.Time) }</span>
 			</div>
-			<div>{ msg.Content }</div>
-		</div>
-	</div>
-}
-
-templ ErrorMessage(errMsg string) {
-	<div hx-swap-oob="innerHTML:body">
-		<div class="h-full w-full flex flex-col justify-center items-center gap-3">
-			<h1 class="text-5xl text-red-300">Error</h1>
-			<p class="text-xl text-red-500">{ errMsg }</p>
-			<a href="/" class="text-xl text-white p-2 rounded bg-red-500">Return</a>
+			<div class="whitespace-pre-line">{ msg.Content }</div>
 		</div>
 	</div>
 }

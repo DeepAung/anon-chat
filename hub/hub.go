@@ -55,7 +55,18 @@ func (h *Hub) RoomsMarshalled() []byte {
 	return res
 }
 
-func (h *Hub) Create(roomName string) string {
+func (h *Hub) GetRoom(roomId string) (types.Room, bool) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	room, ok := h.rooms[roomId]
+	if !ok {
+		return types.Room{}, false
+	}
+	return *room, true
+}
+
+func (h *Hub) CreateRoom(roomName string) string {
 	roomId := uuid.NewString()
 	newRoom := &types.Room{
 		Id:    roomId,
@@ -74,17 +85,8 @@ func (h *Hub) Connect(conn *websocket.Conn, username string, roomId string) erro
 	h.mu.Lock()
 	room, ok := h.rooms[roomId]
 	if !ok {
-		// IN PROD
-		// h.mu.Unlock()
-		// return RoomIdNotFoundErr
-
-		// FOR DEV
-		h.rooms[roomId] = &types.Room{
-			Id:    roomId,
-			Name:  "Anonymous Room",
-			Users: make(map[*websocket.Conn]types.User),
-		}
-		room = h.rooms[roomId]
+		h.mu.Unlock()
+		return RoomIdNotFoundErr
 	}
 
 	room.Users[conn] = types.User{
@@ -130,7 +132,7 @@ func (h *Hub) ConnectAndListen(conn *websocket.Conn, username, roomId string) {
 	defer conn.Close()
 
 	if err := h.Connect(conn, username, roomId); err != nil {
-		views.ErrorMessage(err.Error()).Render(context.Background(), conn)
+		views.ErrorBody(err.Error()).Render(context.Background(), conn)
 		return
 	}
 
@@ -150,7 +152,7 @@ func (h *Hub) ConnectAndListen(conn *websocket.Conn, username, roomId string) {
 
 			fmt.Println("disconnect bz error: ", err)
 
-			views.ErrorMessage(err.Error()).Render(context.Background(), conn)
+			views.ErrorBody(err.Error()).Render(context.Background(), conn)
 
 			resMsg := types.NewSystemMessage(username + " is leaved")
 			h.Broadcast(resMsg, roomId)

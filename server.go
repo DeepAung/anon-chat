@@ -27,7 +27,7 @@ func (s *server) Start() {
 	s.r.WsRouter(mux, s.hub)
 	s.r.RoomsRouter(mux, s.hub)
 	s.r.TestRouter(mux, s.hub)
-	s.r.PagesRouter(mux)
+	s.r.PagesRouter(mux, s.hub)
 
 	// TODO: change to ":3000" in prod (I add localhost bc i don't wanna fight windows defender firewall everytime code is updated)
 	log.Fatal(http.ListenAndServe("127.0.0.1:3000", mux))

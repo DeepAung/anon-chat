@@ -1,0 +1,23 @@
+package views
+
+templ ErrorPage(errMsg string) {
+	@MainLayout("anon-chat | error") {
+		@ErrorBody(errMsg)
+	}
+}
+
+templ ErrorBody(errMsg string) {
+	<div hx-swap-oob="innerHTML:body">
+		<div class="h-screen w-screen flex flex-col justify-center items-center gap-3">
+			<h1 class="text-5xl text-red-300">Error</h1>
+			<p class="text-xl text-red-500">{ errMsg }</p>
+			<a href="/" class="text-xl text-white p-2 rounded bg-red-500">Return</a>
+		</div>
+	</div>
+}
+
+templ ErrorMsg(errMsg string) {
+	<div hx-swap-oob="innerHTML:#error-msg">
+		<span class="whitespace-pre-line text-red-500">{ errMsg }</span>
+	</div>
+}

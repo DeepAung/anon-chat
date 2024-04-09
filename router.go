@@ -32,8 +32,8 @@ func (r *router) TestRouter(mux *http.ServeMux, hub *hub.Hub) {
 	})
 }
 
-func (r *router) PagesRouter(mux *http.ServeMux) {
-	handler := handlers.NewPagesHandler()
+func (r *router) PagesRouter(mux *http.ServeMux, hub *hub.Hub) {
+	handler := handlers.NewPagesHandler(hub)
 
 	mux.HandleFunc("GET /chat", handler.Chat)
 	mux.HandleFunc("/", handler.Index)
