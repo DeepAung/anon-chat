@@ -10,6 +10,7 @@ import (
 
 	"github.com/DeepAung/anon-chat/types"
 	"github.com/DeepAung/anon-chat/views"
+	"github.com/a-h/templ"
 	"github.com/google/uuid"
 	"golang.org/x/net/websocket"
 )
@@ -115,10 +116,10 @@ func (h *Hub) Disconnect(conn *websocket.Conn, roomId string) error {
 	return nil
 }
 
-func (h *Hub) Broadcast(msg types.ResMessage, roomId string) error {
+func (h *Hub) Broadcast(component templ.Component, roomId string) error {
 	h.mu.Lock()
 	for conn := range h.rooms[roomId].Users {
-		if err := views.Message(msg).Render(context.Background(), conn); err != nil {
+		if err := component.Render(context.Background(), conn); err != nil {
 			h.mu.Unlock()
 			return err
 		}
@@ -126,6 +127,18 @@ func (h *Hub) Broadcast(msg types.ResMessage, roomId string) error {
 
 	h.mu.Unlock()
 	return nil
+}
+
+func (h *Hub) BroadcastMessage(msg types.ResMessage, roomId string) error {
+	return h.Broadcast(views.Message(msg), roomId)
+}
+
+func (h *Hub) BroadcastMemberJoin(user types.User, roomId string) error {
+	return h.Broadcast(views.MemberJoin(user), roomId)
+}
+
+func (h *Hub) BroadcastMemberLeave(user types.User, roomId string) error {
+	return h.Broadcast(views.MemberLeave(user), roomId)
 }
 
 func (h *Hub) ConnectAndListen(conn *websocket.Conn, username, roomId string) {
@@ -136,14 +149,15 @@ func (h *Hub) ConnectAndListen(conn *websocket.Conn, username, roomId string) {
 		return
 	}
 
-	resMsg := types.NewSystemMessage(username + " is joined")
-	h.Broadcast(resMsg, roomId)
-
 	h.mu.Lock()
 	user := h.rooms[roomId].Users[conn]
 	h.mu.Unlock()
-	var reqMsg types.ReqMessage
 
+	resMsg := types.NewSystemMessage(username + " is joined")
+	h.BroadcastMessage(resMsg, roomId)
+	h.BroadcastMemberJoin(user, roomId)
+
+	var reqMsg types.ReqMessage
 	for {
 		if err := websocket.JSON.Receive(conn, &reqMsg); err != nil {
 			if err == io.EOF {
@@ -155,19 +169,23 @@ func (h *Hub) ConnectAndListen(conn *websocket.Conn, username, roomId string) {
 			views.ErrorBody(err.Error()).Render(context.Background(), conn)
 
 			resMsg := types.NewSystemMessage(username + " is leaved")
-			h.Broadcast(resMsg, roomId)
+			h.BroadcastMessage(resMsg, roomId)
+			h.BroadcastMemberLeave(user, roomId)
+
 			h.Disconnect(conn, roomId)
 			return
 		}
 
 		if reqMsg.Type == types.DisconnectType {
 			resMsg := types.NewSystemMessage(username + " is leaved")
-			h.Broadcast(resMsg, roomId)
+			h.BroadcastMessage(resMsg, roomId)
+			h.BroadcastMemberLeave(user, roomId)
+
 			h.Disconnect(conn, roomId)
 			return
 		}
 
 		resMsg := types.NewResMessage(reqMsg.Type, user, reqMsg.Content)
-		h.Broadcast(resMsg, roomId)
+		h.BroadcastMessage(resMsg, roomId)
 	}
 }

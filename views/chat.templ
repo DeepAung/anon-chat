@@ -3,7 +3,7 @@ package views
 import "github.com/DeepAung/anon-chat/types"
 import "github.com/xeonx/timeago"
 
-templ Chat(roomName, roomId, connectUrl string) {
+templ Chat(room types.Room, connectUrl string) {
 	@MainLayout("anon-chat | chat") {
 		<script src="./static/js/chat.js"></script>
 		<div hx-ext="ws" ws-connect={ connectUrl }>
@@ -13,43 +13,43 @@ templ Chat(roomName, roomId, connectUrl string) {
 					<input type="submit" value="Disconnect" class="cursor-pointer"/>
 				</form>
 			}
-
 			<main x-data="{ show: false }" class="h-[90vh] flex flex-col">
-					<div class="p-3 flex items-center">
-						<div class="flex-auto">
-							<h1 class="text-primary text-3xl font-semibold text-center">{ roomName }</h1>
-							<p class="text-gray-600 text-center">({ roomId })</p>
-						</div>
-						<button type="button" @click="show = true" class="flex-initial h-min p-2 rounded bg-primary-dark">
-							<i class="fa-solid fa-users"></i>
-						</button>
+				<div class="p-3 flex items-center">
+					<div class="flex-auto">
+						<h1 class="text-primary text-3xl font-semibold text-center">{ room.Name }</h1>
+						<p class="text-gray-600 text-center">({ room.Id })</p>
 					</div>
-
-					<div id="messages" class="flex-auto flex-col-reverse overflow-y-scroll overflow-x-hidden"></div>
-
-					<form x-data ws-send class="flex-initial">
-						<input type="hidden" name="type" value="user"/>
-						<textarea
-							rows="5"
-							name="content"
-							placeholder="Send some message... (Ctrl + Enter to send)"
-							@keydown.ctrl.enter.prevent="$el.form.requestSubmit( $refs.submitButton ); $el.value = ''"
-							class="bg-slate-800 text-slate-300 text-sm rounded-lg block w-[calc(100vw-30px)] p-2.5 my-[15px] mx-auto"
-						></textarea>
-						<input x-ref="submitButton" type="submit" class="hidden"/>
-					</form>
-
-					<section 
+					<button type="button" @click="show = true" class="flex-initial h-min p-2 rounded bg-primary-dark">
+						<i class="fa-solid fa-users"></i>
+					</button>
+				</div>
+				<div id="messages" class="flex-auto flex-col-reverse overflow-y-scroll overflow-x-hidden"></div>
+				<form x-data ws-send class="flex-initial">
+					<input type="hidden" name="type" value="user"/>
+					<textarea
+						rows="5"
+						name="content"
+						placeholder="Send some message... (Ctrl + Enter to send)"
+						@keydown.ctrl.enter.prevent="$el.form.requestSubmit( $refs.submitButton ); $el.value = ''"
+						class="bg-slate-800 text-slate-300 text-sm rounded-lg block w-[calc(100vw-30px)] p-2.5 my-[15px] mx-auto"
+					></textarea>
+					<input x-ref="submitButton" type="submit" class="hidden"/>
+				</form>
+				<section
 					:class="show ? '' : 'hidden'"
-					class="h-[100vh] bg-slate-800 fixed z-10 top-0 right-0 p-3 overflow-x-hidden transition" 
-					>
-						<button type="button" @click="show = false" class="h-min p-2 rounded bg-primary-dark">
-							<i class="fa-solid fa-users"></i>
-						</button>
-						User here bro
-					</section>
+					class="h-[100vh] bg-slate-800 fixed z-10 top-0 right-0 p-3 overflow-x-hidden transition"
+				>
+					<button type="button" @click="show = false" class="h-min p-2 rounded bg-primary-dark">
+						<i class="fa-solid fa-users"></i>
+					</button>
+					<p>User here bro.</p>
+					<div id="members">
+						for _, user := range room.Users {
+							@Member(user)
+						}
+					</div>
+				</section>
 			</main>
-
 		</div>
 	}
 }
@@ -65,4 +65,21 @@ templ Message(msg types.ResMessage) {
 			<div class="whitespace-pre-line">{ msg.Content }</div>
 		</div>
 	</div>
+}
+
+templ Member(user types.User) {
+	<div class="p-2 hover:bg-slate-800" id={ "member-" + user.Id }>
+		<span class="text-primary">{ user.Username }</span>
+		<span class="text-gray-600 text-sm">({ user.Id })</span>
+	</div>
+}
+
+templ MemberJoin(user types.User) {
+	<div hx-swap-oob="beforeend:#members">
+		@Member(user)
+	</div>
+}
+
+templ MemberLeave(user types.User) {
+	<div hx-swap-oob={ "delete:#member-" + user.Id }></div>
 }
