@@ -32,13 +32,10 @@ vendor
 /assets
 
 # Customs
-*.env*
+*.env
+*.env.prod
 /tmp
-*.pem
-apikey.txt
-*.txt
-/tests/images
-/public/storage
-
 node_modules/
 **/*_templ.go
+*.txt
+setup.lua

@@ -9,10 +9,10 @@ func main() {
 }
 
 func startServer() {
+	router := NewRouter()
+	cfg := LoadConfig()
 	hub := hub.NewHub()
 
-	router := NewRouter()
-
-	server := NewServer(router, hub)
+	server := NewServer(router, cfg, hub)
 	server.Start()
 }
