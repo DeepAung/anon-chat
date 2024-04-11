@@ -1,7 +1,10 @@
 package main
 
 import (
-	"github.com/DeepAung/anon-chat/hub"
+	"github.com/DeepAung/anon-chat/pkg/config"
+	"github.com/DeepAung/anon-chat/pkg/hub"
+	"github.com/DeepAung/anon-chat/pkg/router"
+	"github.com/DeepAung/anon-chat/pkg/server"
 )
 
 func main() {
@@ -9,10 +12,10 @@ func main() {
 }
 
 func startServer() {
-	router := NewRouter()
-	cfg := LoadConfig()
-	hub := hub.NewHub()
+	cfg := config.LoadConfig()
+	router := router.NewRouter()
+	hub := hub.NewHub(cfg)
 
-	server := NewServer(router, cfg, hub)
+	server := server.NewServer(router, cfg, hub)
 	server.Start()
 }

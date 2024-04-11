@@ -1,27 +1,29 @@
-package main
+package server
 
 import (
 	"log"
 	"net/http"
 
-	"github.com/DeepAung/anon-chat/hub"
+	"github.com/DeepAung/anon-chat/pkg/config"
+	"github.com/DeepAung/anon-chat/pkg/hub"
+	"github.com/DeepAung/anon-chat/pkg/router"
 )
 
-type server struct {
-	r   *router
-	cfg *config
+type Server struct {
+	r   *router.Router
+	cfg *config.Config
 	hub *hub.Hub
 }
 
-func NewServer(r *router, cfg *config, hub *hub.Hub) *server {
-	return &server{
+func NewServer(r *router.Router, cfg *config.Config, hub *hub.Hub) *Server {
+	return &Server{
 		r:   r,
 		cfg: cfg,
 		hub: hub,
 	}
 }
 
-func (s *server) Start() {
+func (s *Server) Start() {
 	mux := http.NewServeMux()
 
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))

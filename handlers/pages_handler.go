@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/DeepAung/anon-chat/hub"
-	"github.com/DeepAung/anon-chat/utils"
+	"github.com/DeepAung/anon-chat/pkg/hub"
+	"github.com/DeepAung/anon-chat/pkg/utils"
 	"github.com/DeepAung/anon-chat/views"
 )
 

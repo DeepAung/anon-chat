@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/DeepAung/anon-chat/hub"
+	"github.com/DeepAung/anon-chat/pkg/hub"
 	"golang.org/x/net/websocket"
 )
 

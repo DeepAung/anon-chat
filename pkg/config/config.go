@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"log"
@@ -7,8 +7,9 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type config struct {
-	IsProd bool
+type Config struct {
+	IsProd        bool
+	HistoryLength uint
 }
 
 func envPath() string {
@@ -18,7 +19,7 @@ func envPath() string {
 	return os.Args[1]
 }
 
-func LoadConfig() *config {
+func LoadConfig() *Config {
 	path := envPath()
 	envMap, err := godotenv.Read(path)
 	if err != nil {
@@ -30,7 +31,8 @@ func LoadConfig() *config {
 		log.Fatal("load dotenv failed: ", err)
 	}
 
-	return &config{
-		IsProd: envMap["isProd"] == "true",
+	return &Config{
+		IsProd:        envMap["isProd"] == "true",
+		HistoryLength: 100,
 	}
 }
