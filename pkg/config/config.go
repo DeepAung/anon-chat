@@ -1,7 +1,7 @@
 package config
 
 import (
-	"log"
+	"fmt"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -20,19 +20,12 @@ func envPath() string {
 }
 
 func LoadConfig() *Config {
-	path := envPath()
-	envMap, err := godotenv.Read(path)
-	if err != nil {
-		log.Fatal("load dotenv failed: ", err)
-	}
-
-	err = godotenv.Load(path)
-	if err != nil {
-		log.Fatal("load dotenv failed: ", err)
-	}
+	_ = godotenv.Load(envPath())
+	isProd := os.Getenv("IS_PROD")
+	fmt.Println("isProd: ", isProd)
 
 	return &Config{
-		IsProd:        envMap["isProd"] == "true",
+		IsProd:        os.Getenv("IS_PROD") == "true",
 		HistoryLength: 100,
 	}
 }

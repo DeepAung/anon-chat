@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -38,5 +39,6 @@ func (s *Server) Start() {
 		port = "127.0.0.1:3000"
 	}
 
+	fmt.Println("server running on port: ", port)
 	log.Fatal(http.ListenAndServe(port, mux))
 }

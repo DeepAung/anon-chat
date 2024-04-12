@@ -36,6 +36,4 @@ vendor
 *.env.prod
 /tmp
 node_modules/
-**/*_templ.go
-*.txt
 setup.lua
