@@ -3,7 +3,7 @@ package views
 import "github.com/DeepAung/anon-chat/types"
 import "github.com/xeonx/timeago"
 
-templ Chat(room types.Room, connectUrl string) {
+templ Chat(room types.Room, iter types.HistoryIter, connectUrl string) {
 	@MainLayout("anon-chat | chat") {
 		<script src="./static/js/chat.js"></script>
 		<div hx-ext="ws" ws-connect={ connectUrl }>
@@ -14,16 +14,36 @@ templ Chat(room types.Room, connectUrl string) {
 				</form>
 			}
 			<main x-data="{ show: false }" class="h-[90vh] flex flex-col">
+				<!-- head -->
 				<div class="p-3 flex items-center">
 					<div class="flex-auto">
 						<h1 class="text-primary text-3xl font-semibold text-center">{ room.Name }</h1>
-						<p class="text-gray-600 text-center">({ room.Id })</p>
+						<div
+							x-data="{text: 'Copy to clipboard'}"
+							@mouseover.away="text='Copy to clipboard'"
+							@click={ "navigator.clipboard.writeText('" + room.Id + "'); text = 'Copied'" }
+							class="group mt-2 text-gray-600 text-center cursor-pointer"
+						>
+							<div x-text="text" class="opacity-0 group-hover:opacity-100"></div>
+							<div>
+								<span>{ "(" + room.Id + ")" }</span>
+								<span><i class="fa-regular fa-clipboard text-xl"></i></span>
+							</div>
+						</div>
 					</div>
 					<button type="button" @click="show = true" class="flex-initial h-min p-2 rounded bg-primary-dark">
 						<i class="fa-solid fa-users"></i>
 					</button>
 				</div>
-				<div id="messages" class="flex-auto flex-col-reverse overflow-y-scroll overflow-x-hidden"></div>
+				<!-- end -->
+				<!-- msg body -->
+				<div id="messages" class="flex-auto overflow-y-scroll overflow-x-hidden">
+					for iter.Next() {
+						@Message(iter.Get())
+					}
+				</div>
+				<!-- end -->
+				<!-- chat input -->
 				<form x-data ws-send class="flex-initial">
 					<input type="hidden" name="type" value="user"/>
 					<textarea
@@ -35,19 +55,24 @@ templ Chat(room types.Room, connectUrl string) {
 					></textarea>
 					<input x-ref="submitButton" type="submit" class="hidden"/>
 				</form>
+				<!-- end -->
+				<!-- members sidebar -->
 				<section
 					:class="show ? '' : 'hidden'"
 					class="h-[100vh] bg-slate-800 fixed z-10 top-0 right-0 p-3 overflow-x-hidden transition"
 				>
-					<button type="button" @click="show = false" class="h-min p-2 rounded bg-primary-dark">
-						<i class="fa-solid fa-users"></i>
-					</button>
-					<p>User here bro.</p>
-					<div id="members">
+					<div class="flex items-center mb-3">
+						<button type="button" @click="show = false" class="flex-initial h-min p-2 rounded bg-primary-dark">
+							<i class="fa-solid fa-users"></i>
+						</button>
+						<p class="flex-auto text-center">Members</p>
+					</div>
+					<div id="members" class="flex flex-col gap-2">
 						for _, user := range room.Users {
 							@Member(user)
 						}
 					</div>
+					<!-- end -->
 				</section>
 			</main>
 		</div>
@@ -68,9 +93,9 @@ templ Message(msg types.ResMessage) {
 }
 
 templ Member(user types.User) {
-	<div class="p-2 hover:bg-slate-800" id={ "member-" + user.Id }>
-		<span class="text-primary">{ user.Username }</span>
-		<span class="text-gray-600 text-sm">({ user.Id })</span>
+	<div class="p-2 rounded hover:bg-slate-700" id={ "member-" + user.Id }>
+		<p class="text-primary">{ user.Username }</p>
+		<p class="text-gray-600 text-sm">({ user.Id })</p>
 	</div>
 }
 

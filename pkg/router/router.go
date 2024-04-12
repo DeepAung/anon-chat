@@ -28,7 +28,11 @@ func (r *Router) RoomsRouter(mux *http.ServeMux, hub *hub.Hub) {
 
 func (r *Router) TestRouter(mux *http.ServeMux, hub *hub.Hub) {
 	mux.HandleFunc("GET /api/test/rooms", func(w http.ResponseWriter, r *http.Request) {
-		w.Write(hub.RoomsMarshalled())
+		_, err := w.Write(hub.JSONRooms())
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	})
 }
 

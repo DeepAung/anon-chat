@@ -9,7 +9,7 @@ import (
 
 type Config struct {
 	IsProd        bool
-	HistoryLength uint
+	HistoryLength int
 }
 
 func envPath() string {

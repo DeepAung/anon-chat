@@ -41,7 +41,7 @@ func (h *pagesHandler) Chat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := views.Chat(room, connectUrl).Render(context.Background(), w); err != nil {
+	if err := views.Chat(room, *room.MsgHistory.Iter(), connectUrl).Render(context.Background(), w); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

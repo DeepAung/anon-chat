@@ -10,3 +10,12 @@ type Room struct {
 	Users      map[*websocket.Conn]User `json:"users"`
 	MsgHistory *History                 `json:"messages"`
 }
+
+func NewRoom(id, name string, historyLen int) Room {
+	return Room{
+		Id:         id,
+		Name:       name,
+		Users:      make(map[*websocket.Conn]User),
+		MsgHistory: NewHistory(historyLen),
+	}
+}

@@ -11,21 +11,30 @@ func NewHistory(len int) *History {
 	return &History{
 		data: make([]ResMessage, len),
 		len:  len,
-		st:   0,
-		ed:   1,
+		st:   -1,
+		ed:   -1,
 	}
 }
 
 func (h *History) Push(val ResMessage) {
-	if h.ed == h.st {
-		h.st++
+	newEd := (h.ed + 1) % h.len
+
+	if h.st == -1 && h.ed == -1 {
+		h.st = 0
+		h.ed = 0
+		h.data[h.ed] = val
+	} else if newEd == h.st {
+		h.st = (h.st + 1) % h.len
+		h.ed = newEd
+		h.data[h.ed] = val
+	} else {
+		h.ed = newEd
+		h.data[h.ed] = val
 	}
-	h.data[h.ed] = val
-	h.ed = (h.ed + 1) % h.len
 }
 
-func (h *History) Iter() *historyIter {
-	return &historyIter{
+func (h *History) Iter() *HistoryIter {
+	return &HistoryIter{
 		data: h.data,
 		len:  len(h.data),
 		cur:  h.st,
@@ -33,18 +42,22 @@ func (h *History) Iter() *historyIter {
 	}
 }
 
-type historyIter struct {
+type HistoryIter struct {
 	data []ResMessage
 	len  int
 	cur  int
 	ed   int
 }
 
-func (i *historyIter) Next() bool {
-	return (i.cur+1)%i.len != i.ed
+func (i *HistoryIter) Next() bool {
+	if i.cur == -1 && i.ed == -1 {
+		return false
+	}
+	return i.cur != (i.ed+1)%i.len
 }
 
-func (i *historyIter) Get() ResMessage {
+func (i *HistoryIter) Get() ResMessage {
+	res := i.data[i.cur]
 	i.cur = (i.cur + 1) % i.len
-	return i.data[i.cur]
+	return res
 }
