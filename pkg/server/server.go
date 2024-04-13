@@ -31,7 +31,9 @@ func (s *Server) Start() {
 
 	s.r.WsRouter(mux, s.hub)
 	s.r.RoomsRouter(mux, s.hub)
-	s.r.TestRouter(mux, s.hub)
+	if !s.cfg.IsProd {
+		s.r.TestRouter(mux, s.hub)
+	}
 	s.r.PagesRouter(mux, s.hub)
 
 	port := ":3000"

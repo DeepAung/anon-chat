@@ -8,9 +8,9 @@ templ Chat(room types.Room, iter types.HistoryIter, connectUrl string) {
 		<script src="./static/js/chat.js"></script>
 		<div hx-ext="ws" ws-connect={ connectUrl }>
 			@Navbar() {
-				<form id="disconnect-form" ws-send class="font-semibold p-2 rounded bg-primary-dark">
+				<form ws-send class="font-semibold p-2 rounded bg-primary-dark">
 					<input type="hidden" name="type" value="disconnect"/>
-					<input type="submit" value="Disconnect" class="cursor-pointer"/>
+					<input id="disconnect" type="submit" value="Disconnect" class="cursor-pointer"/>
 				</form>
 			}
 			<main x-data="{ show: false }" class="h-[90vh] flex flex-col">

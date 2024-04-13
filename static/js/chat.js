@@ -1,19 +1,16 @@
-document.addEventListener("htmx:wsOpen", (_) => {
-	console.log("on htmx:wsOpen");
-});
+window.onbeforeunload = (e) => {
+	e.preventDefault();
+};
 
-// document.onvisibilitychange = () => {
-// 	document.getElementById("disconnect-form").submit();
-// 	alert("onvisibilitychange");
-// };
+window.onunload = () => {
+	document.getElementById("disconnect").click();
+};
 
 document.addEventListener("htmx:wsClose", (_) => {
-	console.log("on htmx:wsClose");
 	window.location.assign("/");
 });
 
 document.addEventListener("htmx:wsAfterMessage", (_) => {
 	const div = document.getElementById("messages");
-	// div.scrollTo(0, div.scrollHeight);
 	div.scrollTop = div.scrollHeight;
 });

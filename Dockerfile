@@ -11,7 +11,6 @@ FROM gcr.io/distroless/static-debian11 AS release-stage
 WORKDIR /
 COPY --from=build-stage /entrypoint /entrypoint
 COPY --from=build-stage /app/static /static
-ENV IS_PROD=true
 EXPOSE 3000
 USER nonroot:nonroot
 ENTRYPOINT ["/entrypoint"]

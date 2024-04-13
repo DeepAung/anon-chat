@@ -55,7 +55,7 @@ func Chat(room types.Room, iter types.HistoryIter, connectUrl string) templ.Comp
 					templ_7745c5c3_Buffer = templ.GetBuffer()
 					defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form id=\"disconnect-form\" ws-send class=\"font-semibold p-2 rounded bg-primary-dark\"><input type=\"hidden\" name=\"type\" value=\"disconnect\"> <input type=\"submit\" value=\"Disconnect\" class=\"cursor-pointer\"></form>")
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form ws-send class=\"font-semibold p-2 rounded bg-primary-dark\"><input type=\"hidden\" name=\"type\" value=\"disconnect\"> <input id=\"disconnect\" type=\"submit\" value=\"Disconnect\" class=\"cursor-pointer\"></form>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
