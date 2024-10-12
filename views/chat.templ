@@ -44,15 +44,17 @@ templ Chat(room types.Room, iter types.HistoryIter, connectUrl string) {
 				</div>
 				<!-- end -->
 				<!-- chat input -->
-				<form x-data ws-send class="flex-initial">
+				<form x-data x-ref="form" ws-send class="flex-initial flex justify-center items-center gap-2 w-[calc(100vw-30px)] my-[15px] mx-auto">
 					<input type="hidden" name="type" value="user"/>
 					<textarea
 						rows="5"
 						name="content"
 						placeholder="Send some message... (Ctrl + Enter to send)"
-						@keydown.ctrl.enter.prevent="$el.form.requestSubmit( $refs.submitButton ); $el.value = ''"
-						class="bg-slate-800 text-slate-300 text-sm rounded-lg block w-[calc(100vw-30px)] p-2.5 my-[15px] mx-auto"
+						x-ref="textarea"
+						@keydown.ctrl.enter.prevent="$refs.form.requestSubmit( $refs.submitButton ); $refs.textarea.value = ''"
+						class="flex-auto bg-slate-800 text-slate-300 text-sm rounded-lg block p-2.5"
 					></textarea>
+					<i @click="$refs.form.requestSubmit( $refs.submitButton ); $refs.textarea.value = ''" class="flex-initial fa-solid fa-arrow-right text-2xl p-2 rounded hover:bg-slate-800"></i>
 					<input x-ref="submitButton" type="submit" class="hidden"/>
 				</form>
 				<!-- end -->
